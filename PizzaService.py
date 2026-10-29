@@ -1,3 +1,4 @@
+import uuid
 import socket
 import threading
 
@@ -22,10 +23,10 @@ class PizzaService:
         conn, addr = self.server_socket.accept()
         try:
           raw_data = conn.recv(2048).decode("utf-8")
-          print(f"Pizza service {self.ip_addr}:{self.port} got this: {raw_data.strip()}")
-          
+          unique_order_id = uuid.uuid4()
           response_body = (
-            f"Order fulfilled by {self.replica_id} at {self.ip_addr}:{self.port}"
+            f"Order ID: {unique_order_id} | "
+            f"Fulfilled by {self.replica_id} at {self.ip_addr}:{self.port}"
           )
 
           http_response = (

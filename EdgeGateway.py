@@ -35,8 +35,8 @@ class EdgeGateway:
   def handle_connection(self, conn: socket.socket):
     try:
       raw_data = conn.recv(2048).decode('utf-8')
-      print('[EDGE GATEWAY RECEIVED RAW TCP PACKET]')
-      print(raw_data.strip())
+      # print('[EDGE GATEWAY RECEIVED RAW TCP PACKET]')
+      # print(raw_data.strip())
 
       # parse to find host header
       host_header = ''
@@ -44,15 +44,15 @@ class EdgeGateway:
         if line.lower().startswith('host:'): 
           host_header = line.split(':', 1)[1].strip()
           break
-      print(f"Gateway extracted Host Header: {host_header}")
+      # print(f"Gateway extracted Host Header: {host_header}")
 
       if host_header in self.routes:
         internal_target = self.routes[host_header]
-        print(f"Routing rule matched: {host_header} to service {internal_target}")
+        # print(f"Routing rule matched: {host_header} to service {internal_target}")
         
         # Query the service registry
         endpoints = self.registry.get_endpoints(internal_target)
-        print(f"Endpoints: {endpoints}")
+        # print(f"Endpoints: {endpoints}")
 
         # Choose any endpoint. TODO: load-balancing
         target_ip, target_port = random.choice(endpoints)
@@ -64,7 +64,7 @@ class EdgeGateway:
           backend_socket.connect((target_ip, target_port))
           backend_socket.sendall(raw_data.encode('utf-8')) # forward
           backend_response = backend_socket.recv(4096)
-          print(f"Backend response: {backend_response.strip()}")
+          # print(f"Backend response: {backend_response.strip()}")
           conn.sendall(backend_response) # to client
         except Exception as e:
           print(f"Failed to communicate with replica {target_ip}:{target_port} -> {e}")

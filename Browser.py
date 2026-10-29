@@ -12,4 +12,6 @@ resolved_ip, resolved_port = dns.resolve(domain_name)
 print(f"Browser resolved {domain_name} -> {resolved_ip}:{resolved_port}")
 
 client = RealPizzaClient(domain_name, resolved_ip, resolved_port)
-client.order_pizza("margherita", 2)
+
+for i in range(0, 500):
+  client.order_pizza("margherita", 2)
