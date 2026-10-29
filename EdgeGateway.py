@@ -1,9 +1,11 @@
 import Constants
 import socket
 import threading
+from ClusterManager import registry
 
 class EdgeGateway:
-  def __init__(self, ip_addr: str, port: int = 8080):
+  def __init__(self, service_registry, ip_addr: str, port: int = 8080):
+    self.registry = service_registry
     self.ip_addr = ip_addr
     self.port = port
     self.routes = {}
@@ -51,8 +53,6 @@ class EdgeGateway:
         endpoints = self.registry.get_endpoints(internal_target)
         print(f"Endpoints: {endpoints}")
 
-        
-
         response_body = f"Routed successfully to {internal_target}"
         http_response = (
           'HTTP/1.1 200 OK\r\n'
@@ -70,7 +70,7 @@ class EdgeGateway:
       conn.close()
 
 if __name__ == '__main__':
-  edge_gateway = EdgeGateway(Constants.edge_gateway_ip_addr, Constants.edge_gateway_port)
+  edge_gateway = EdgeGateway(registry, Constants.edge_gateway_ip_addr, Constants.edge_gateway_port)
   edge_gateway.add_route("pizza.service.com", "pizza-service")
 
   # Runs until stopped with Ctrl+C
@@ -78,3 +78,4 @@ if __name__ == '__main__':
     edge_gateway.start()
   except KeyboardInterrupt:
     print("\nEdge gateway shutting down")
+    

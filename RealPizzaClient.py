@@ -22,7 +22,7 @@ class RealPizzaClient:
     self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.client_socket.connect((self.ip_addr, self.port))
     self.client_socket.sendall(http_request.encode("utf-8"))
-    
+    print("client send http request to edge gateway")
     response_bytes = b""
     while True:
       chunk = self.client_socket.recv(1024)
