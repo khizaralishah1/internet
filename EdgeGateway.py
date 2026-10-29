@@ -2,6 +2,7 @@ import Constants
 import socket
 import threading
 from ClusterManager import registry
+import random
 
 class EdgeGateway:
   def __init__(self, service_registry, ip_addr: str, port: int = 8080):
@@ -53,19 +54,24 @@ class EdgeGateway:
         endpoints = self.registry.get_endpoints(internal_target)
         print(f"Endpoints: {endpoints}")
 
-        response_body = f"Routed successfully to {internal_target}"
-        http_response = (
-          'HTTP/1.1 200 OK\r\n'
-          'Content-Type: text/plain\r\n'
-          f'Content-Length: {len(response_body)}\r\n'
-          'Connection: close\r\n'
-          '\r\n' + response_body
-        )
-      else:
-        http_response = 'HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n'
+        # Choose any endpoint. TODO: load-balancing
+        target_ip, target_port = random.choice(endpoints)
+        target_port = int(target_port)
 
-      # send back to client
-      conn.sendall(http_response.encode('utf-8'))
+        # Open a temporary internal tcp connection to that replica
+        backend_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+          backend_socket.connect((target_ip, target_port))
+          backend_socket.sendall(raw_data.encode('utf-8')) # forward
+          backend_response = backend_socket.recv(4096)
+          print(f"Backend response: {backend_response.strip()}")
+          conn.sendall(backend_response) # to client
+        except Exception as e:
+          print(f"Failed to communicate with replica {target_ip}:{target_port} -> {e}")
+        finally:
+          backend_socket.close()
+    except Exception as e:
+      print(f"Edge gateway can't handle connect")
     finally:
       conn.close()
 
